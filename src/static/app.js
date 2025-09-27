@@ -3,6 +3,27 @@ document.addEventListener("DOMContentLoaded", () => {
   const activitySelect = document.getElementById("activity");
   const signupForm = document.getElementById("signup-form");
   const messageDiv = document.getElementById("message");
+  const loginForm = document.getElementById("login-form");
+  const loginSection = document.getElementById("login-section");
+  const logoutBtn = document.getElementById("logout-btn");
+  const adminSection = document.getElementById("admin-section");
+
+  let accessToken = localStorage.getItem("accessToken");
+  
+  // Show/hide sections based on auth state
+  function updateAuthUI() {
+    if (accessToken) {
+      loginSection.style.display = "none";
+      adminSection.style.display = "block";
+      logoutBtn.style.display = "block";
+      document.querySelectorAll(".admin-only").forEach(el => el.style.display = "block");
+    } else {
+      loginSection.style.display = "block";
+      adminSection.style.display = "none";
+      logoutBtn.style.display = "none";
+      document.querySelectorAll(".admin-only").forEach(el => el.style.display = "none");
+    }
+  }
 
   // Function to fetch activities from API
   async function fetchActivities() {
@@ -68,10 +89,67 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Handle unregister functionality
+  // Handle login form submission
+  loginForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const email = document.getElementById("login-email").value;
+    const password = document.getElementById("login-password").value;
+
+    try {
+      const response = await fetch("/token", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: `username=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`,
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        accessToken = data.access_token;
+        localStorage.setItem("accessToken", accessToken);
+        updateAuthUI();
+        messageDiv.textContent = "Login successful!";
+        messageDiv.className = "success";
+      } else {
+        messageDiv.textContent = data.detail || "Login failed";
+        messageDiv.className = "error";
+      }
+
+      messageDiv.classList.remove("hidden");
+      setTimeout(() => messageDiv.classList.add("hidden"), 5000);
+    } catch (error) {
+      console.error("Login error:", error);
+      messageDiv.textContent = "Login failed. Please try again.";
+      messageDiv.className = "error";
+      messageDiv.classList.remove("hidden");
+    }
+  });
+
+  // Handle logout
+  logoutBtn.addEventListener("click", () => {
+    localStorage.removeItem("accessToken");
+    accessToken = null;
+    updateAuthUI();
+    messageDiv.textContent = "Logged out successfully";
+    messageDiv.className = "success";
+    messageDiv.classList.remove("hidden");
+    setTimeout(() => messageDiv.classList.add("hidden"), 5000);
+  });
+
   async function handleUnregister(event) {
     const button = event.target;
     const activity = button.getAttribute("data-activity");
     const email = button.getAttribute("data-email");
+
+    if (!accessToken) {
+      messageDiv.textContent = "Please login as a teacher to unregister students";
+      messageDiv.className = "error";
+      messageDiv.classList.remove("hidden");
+      setTimeout(() => messageDiv.classList.add("hidden"), 5000);
+      return;
+    }
 
     try {
       const response = await fetch(
@@ -80,6 +158,9 @@ document.addEventListener("DOMContentLoaded", () => {
         )}/unregister?email=${encodeURIComponent(email)}`,
         {
           method: "DELETE",
+          headers: {
+            "Authorization": `Bearer ${accessToken}`
+          }
         }
       );
 
@@ -114,6 +195,14 @@ document.addEventListener("DOMContentLoaded", () => {
   signupForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
+    if (!accessToken) {
+      messageDiv.textContent = "Please login as a teacher to register students";
+      messageDiv.className = "error";
+      messageDiv.classList.remove("hidden");
+      setTimeout(() => messageDiv.classList.add("hidden"), 5000);
+      return;
+    }
+
     const email = document.getElementById("email").value;
     const activity = document.getElementById("activity").value;
 
@@ -124,6 +213,9 @@ document.addEventListener("DOMContentLoaded", () => {
         )}/signup?email=${encodeURIComponent(email)}`,
         {
           method: "POST",
+          headers: {
+            "Authorization": `Bearer ${accessToken}`
+          }
         }
       );
 
@@ -156,5 +248,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Initialize app
+  updateAuthUI();
   fetchActivities();
 });
