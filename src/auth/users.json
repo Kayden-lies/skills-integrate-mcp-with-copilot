@@ -1,0 +1,16 @@
+{
+    "teachers": [
+        {
+            "email": "smith@mergington.edu",
+            "password": "$2b$12$1234567890123456789012uABCDEFGHIJKLMNOPQRSTUVWXYZ012345",
+            "full_name": "Mr. Smith",
+            "role": "teacher"
+        },
+        {
+            "email": "jones@mergington.edu",
+            "password": "$2b$12$1234567890123456789012uABCDEFGHIJKLMNOPQRSTUVWXYZ012346",
+            "full_name": "Ms. Jones",
+            "role": "teacher"
+        }
+    ]
+}

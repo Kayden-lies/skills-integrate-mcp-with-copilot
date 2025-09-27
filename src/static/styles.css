@@ -28,6 +28,17 @@ header h1 {
   margin-bottom: 10px;
 }
 
+#logout-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background-color: #c62828;
+}
+
+#logout-btn:hover {
+  background-color: #b71c1c;
+}
+
 main {
   display: flex;
   flex-wrap: wrap;
@@ -189,6 +200,25 @@ button:hover {
 }
 
 .hidden {
+  display: none;
+}
+
+#login-section {
+  max-width: 400px;
+  margin: 0 auto 30px;
+}
+
+#login-form .form-group input {
+  padding: 12px;
+}
+
+#login-form button {
+  width: 100%;
+  margin-top: 10px;
+  padding: 12px;
+}
+
+.admin-only {
   display: none;
 }
 
